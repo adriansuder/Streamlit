@@ -125,9 +125,19 @@ with col3:
 
 #print data frame
 if (type(data) == pd.DataFrame) and (not data.empty):
-    tab1, tab2 = st.tabs(["Chart", "Dataframe"])
-    tab1.line_chart(data, use_container_width=True, x='Data', y=selected_columns.remove('Data'))
-    tab2.dataframe(data, use_container_width=True)
+    tab1, tab2 = st.tabs(["Wykres zanieczyszczenia PM10", "Dataframe"])
+    if len(selected_columns) > 2:
+        tab1.line_chart(data, x='Data', y=[col for col in selected_columns if col != 'Data'])
+    else:
+        # Wykres główny
+        fig = px.line(data, x="Data", y=selected_columns[1], title="Stężenie PM10")
+        # Dodanie linii odniesienia (np. 50 µg/m³)
+        fig.add_hline(y=50, line_dash="dash", line_color="red", annotation_text="Limit 50 µg/m³", annotation_position="top left")
+
+        # Wyświetlenie w Streamlit
+        st.plotly_chart(fig)
+
+    tab2.dataframe(data)
 else:
     st.warning("Brak danych do wyświetlenia. Kliknij 'Pobierz dane' jeśli zmieniałeś/aś zakres danych.")
 
@@ -202,5 +212,3 @@ if pobierz_pogode:
         # Wyświetl wykres słupkowy
         tab3.bar_chart(pivot_df, stack=False)
         tab5.dataframe(weatherData)
-    else:
-        st.warning("Brak danych pogodowych do wyświetlenia. Sprawdź poprawność wyboru okresu lub miast.")
